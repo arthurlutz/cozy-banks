@@ -22,6 +22,7 @@ export const BANK_ACCOUNT_STATS_DOCTYPE = 'io.cozy.bank.accounts.stats'
 export const CONTACT_DOCTYPE = 'io.cozy.contacts'
 export const RECURRENCE_DOCTYPE = 'io.cozy.bank.recurrence'
 export const IDENTITIES_DOCTYPE = 'io.cozy.identities'
+export const TAGS_DOCTYPE = 'io.cozy.tags'
 
 export const offlineDoctypes = [
   ACCOUNT_DOCTYPE,
@@ -29,7 +30,8 @@ export const offlineDoctypes = [
   TRANSACTION_DOCTYPE,
   SETTINGS_DOCTYPE,
   BILLS_DOCTYPE,
-  CONTACT_DOCTYPE
+  CONTACT_DOCTYPE,
+  TAGS_DOCTYPE
 ]
 
 class HasManyBills extends HasManyInPlace {
@@ -121,6 +123,10 @@ export const schema = {
       reimbursements: {
         type: HasManyReimbursements,
         doctype: BILLS_DOCTYPE
+      },
+      tags: {
+        type: 'has-many',
+        doctype: TAGS_DOCTYPE
       }
     }
   },
@@ -184,6 +190,15 @@ export const schema = {
         doctype: ACCOUNT_DOCTYPE
       }
     }
+  },
+  tags: {
+    doctype: TAGS_DOCTYPE,
+    relationships: {
+      transactions: {
+        type: 'has-many',
+        doctype: TRANSACTION_DOCTYPE
+      }
+    }
   }
 }
 
@@ -214,7 +229,7 @@ export const transactionsConn = {
   query: () =>
     Q(TRANSACTION_DOCTYPE)
       .UNSAFE_noLimit()
-      .include(['bills', 'account', 'reimbursements', 'recurrence']),
+      .include(['bills', 'account', 'reimbursements', 'recurrence', 'tags']),
   as: 'transactions',
   fetchPolicy: older30s
 }
@@ -296,4 +311,10 @@ export const myselfConn = {
 export const konnectorConn = {
   query: slug => Q(KONNECTOR_DOCTYPE).getById(`${KONNECTOR_DOCTYPE}/${slug}`),
   as: 'konnector'
+}
+
+export const tagsConn = {
+  query: () => Q(TAGS_DOCTYPE).include(['transactions']),
+  as: 'tags',
+  fetchPolicy: older30s
 }

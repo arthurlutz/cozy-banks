@@ -1,5 +1,10 @@
 import fromPairs from 'lodash/fromPairs'
-import CozyClient, { QueryDefinition, HasManyInPlace, Q } from 'cozy-client'
+import CozyClient, {
+  QueryDefinition,
+  HasManyInPlace,
+  Q,
+  HasMany
+} from 'cozy-client'
 import subYears from 'date-fns/sub_years'
 import format from 'date-fns/format'
 
@@ -103,6 +108,84 @@ export class HasManyReimbursements extends HasManyInPlace {
   }
 }
 
+export class HasManyTags extends HasMany {
+  add(docsArg) {
+    const docs = Array.isArray(docsArg) ? docsArg : [docsArg]
+
+    // console.info(' ')
+    // console.info('HasManyTags add')
+    // console.info('target type :', this.target._type)
+    // console.info('docs :', docs)
+    // console.info('this.target :', this.target)
+    // console.info(' ')
+
+    for (const tag of docs) {
+      tag.transactions?.add([this.target])
+    }
+
+    super.add(docs)
+  }
+
+  remove(docsArg) {
+    const docs = Array.isArray(docsArg) ? docsArg : [docsArg]
+
+    // console.info(' ')
+    // console.info('HasManyTags remove')
+    // console.info('docs :', docs)
+    // console.info('this.target :', this.target)
+    // console.info(' ')
+
+    // docs.forEach(tag => {
+    //   tag.transactions?.remove(this.target)
+    // })
+
+    for (const tag of docs) {
+      tag.transactions?.remove([this.target])
+    }
+
+    super.remove(docs)
+  }
+}
+
+export class HasManyTransactions extends HasMany {
+  add(docsArg) {
+    const docs = Array.isArray(docsArg) ? docsArg : [docsArg]
+
+    // console.info(' ')
+    // console.info('HasManyTransactions add')
+    // console.info('target type :', this.target._type)
+    // console.info('docs :', docs)
+    // console.info('this.target :', this.target)
+    // console.info(' ')
+
+    for (const transaction of docs) {
+      transaction.tags?.add([this.target])
+    }
+
+    super.add(docs)
+  }
+
+  remove(docsArg) {
+    const docs = Array.isArray(docsArg) ? docsArg : [docsArg]
+
+    // console.info(' ')
+    // console.info('HasManyTransactions remove')
+    // console.info('docs :', docs)
+    // console.info('this.target :', this.target)
+    // console.info(' ')
+
+    // docs.forEach(tag => {
+    //   tag.transactions?.remove(this.target)
+    // })
+
+    for (const transaction of docs) {
+      transaction.tags?.remove([this.target])
+    }
+
+    super.remove(docs)
+  }
+}
+
 export const schema = {
   transactions: {
     doctype: TRANSACTION_DOCTYPE,
@@ -125,7 +208,7 @@ export const schema = {
         doctype: BILLS_DOCTYPE
       },
       tags: {
-        type: 'has-many',
+        type: HasManyTags,
         doctype: TAGS_DOCTYPE
       }
     }
@@ -195,7 +278,7 @@ export const schema = {
     doctype: TAGS_DOCTYPE,
     relationships: {
       transactions: {
-        type: 'has-many',
+        type: HasManyTransactions,
         doctype: TRANSACTION_DOCTYPE
       }
     }
@@ -315,6 +398,16 @@ export const konnectorConn = {
 
 export const tagsConn = {
   query: () => Q(TAGS_DOCTYPE).include(['transactions']),
-  as: 'tags',
+  as: TAGS_DOCTYPE,
   fetchPolicy: older30s
+}
+
+export const buildTagsQueryByIds = ids => {
+  return {
+    definition: Q(TAGS_DOCTYPE).getByIds(ids).include(['transactions']),
+    options: {
+      as: `${TAGS_DOCTYPE}/${JSON.stringify(ids)}`,
+      fetchPolicy: older30s
+    }
+  }
 }

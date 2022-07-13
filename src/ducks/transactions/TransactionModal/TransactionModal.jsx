@@ -17,6 +17,10 @@ import RawContentDialog from 'components/RawContentDialog'
 import TransactionModalInfoContent from 'ducks/transactions/TransactionModal/TransactionModalInfoContent'
 
 const TransactionModal = ({ requestClose, transactionId, ...props }) => {
+  console.info(' ')
+  console.info('transactionId :', transactionId)
+  console.info(' ')
+
   const transaction = useDocument(TRANSACTION_DOCTYPE, transactionId)
   const location = useLocation()
 

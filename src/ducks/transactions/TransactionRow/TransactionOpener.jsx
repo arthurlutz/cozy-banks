@@ -8,9 +8,13 @@ import styles from 'ducks/transactions/Transactions.styl'
 
 const isTouchEventsCatched = ev => {
   // exclude actions from being catched by touch
-  if (hasParentWithClass(ev.target, styles.TransactionRowMobile__actions)) {
+  if (
+    hasParentWithClass(ev.target, styles.TransactionRowMobile__actions) ||
+    hasParentWithClass(ev.target, 'touchPreventDefault')
+  ) {
     return false
   }
+
   return true
 }
 

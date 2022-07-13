@@ -11,7 +11,8 @@ import {
   queryConnect,
   isQueryLoading,
   hasQueryBeenLoaded,
-  useQuery
+  useQuery,
+  useQueryAll
 } from 'cozy-client'
 import { translate } from 'cozy-ui/transpiled/react/I18n'
 import Typography from 'cozy-ui/transpiled/react/Typography'
@@ -22,7 +23,8 @@ import {
   ACCOUNT_DOCTYPE,
   accountsConn,
   groupsConn,
-  cronKonnectorTriggersConn
+  cronKonnectorTriggersConn,
+  tagsConn
 } from 'doctypes'
 import { getFilteringDoc } from 'ducks/filters'
 import Padded from 'components/Padded'
@@ -152,6 +154,7 @@ class TransactionsPage extends Component {
       filteringDoc && filteringDoc._type === ACCOUNT_DOCTYPE
     const isFetching =
       isQueryLoading(transactions) && !hasQueryBeenLoaded(transactions)
+    // const isTagsLoading = isQueryLoading(tags) || tags.hasMore
 
     if (isFetching) {
       return <Loading loadingType="movements" />
@@ -265,9 +268,10 @@ const autoUpdateOptions = {
 
 const setAutoUpdate = conn => ({ ...conn, autoUpdate: autoUpdateOptions })
 
-const addTransactions = Component => {
+const addTransactionsAndTags = Component => {
   const Wrapped = props => {
     const [month, setMonth] = useState(null)
+
     const initialConn = makeFilteredTransactionsConn(props)
     const conn = useMemo(() => {
       return month
@@ -278,6 +282,11 @@ const addTransactions = Component => {
     const transactionsLoaded = useLast(transactions, (last, cur) => {
       return !last || cur.lastUpdate
     })
+    // const tags = useQueryAll(tagsConn.query, tagsConn)
+    // const tagsLoaded = useLast(tags, (last, cur) => {
+    //   return !last || cur.lastUpdate
+    // })
+
     const handleChangeMonth = useCallback(
       month => {
         setMonth(month)
@@ -289,6 +298,7 @@ const addTransactions = Component => {
       <Component
         {...props}
         transactions={transactionsLoaded}
+        // tags={tagsLoaded}
         onChangeMonth={handleChangeMonth}
         isFetchingNewData={transactions !== transactionsLoaded}
       />
@@ -315,7 +325,7 @@ const ConnectedTransactionsPage = compose(
     groups: groupsConn,
     triggers: cronKonnectorTriggersConn
   }),
-  addTransactions,
+  addTransactionsAndTags,
   connect(mapStateToProps)
 )(UnpluggedTransactionsPage)
 
